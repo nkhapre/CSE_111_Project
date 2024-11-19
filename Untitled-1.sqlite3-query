@@ -1,0 +1,72 @@
+-- database: ./Checkpoint2-database.sqlite3
+
+-- Use the ▷ button in the top right corner to run the entire file.
+
+CREATE TABLE player (
+    p_name         varchar(100) not null,
+    p_number       varchar(100) not null,
+    p_team         varchar(100) not null,
+    p_position     varchar(100) not null,
+    p_statisticskey   varchar(100) not null,
+    p_coach        varchar(100) not null
+);
+CREATE TABLE coach (
+    c_name         varchar(100) not null,
+    c_team         varchar(100) not null,
+    c_players      varchar(800) not null
+);
+
+CREATE TABLE team (
+    t_name         varchar(100) not null,
+    t_city         varchar(100) not null,
+    t_conference   varchar(100) not null
+);
+CREATE TABLE round (
+    r_semi        varchar(100) not null,
+    r_quarter        varchar(100) not null,
+    r_conference        varchar(100) not null,
+    r_final        varchar(100) not null
+);
+CREATE TABLE statistics (
+   s_playerkey        decimal(1,0) not null,
+   s_ppg              decimal(3,1) not null,
+   s_rpg              decimal(3,1) not null,               
+   s_apg              decimal(3,1) not null
+);
+CREATE TABLE playoffseries (
+    ps_winningteam         varchar(100) not null,
+    ps_losingteam          varchar(100) not null,
+    ps_round               varchar(100) not null
+    
+);
+CREATE TABLE records (
+    re_player              varchar(100) not null,
+    re_statistics          decimal(3,1) not null
+);
+CREATE TABLE ison (
+    i_round                varchar(100) not null,
+    i_playoffseries        varchar(100) not null                
+);
+CREATE TABLE playsin(
+    pi_team                varchar(100) not null,
+    pi_playoffseries       varchar(100) not null 
+
+);
+
+CREATE TABLE playsfor(
+    pf_player               varchar(100) not null,
+    pf_team                 varchar(100) not null
+);
+
+CREATE TABLE coachedby(
+    cb_coach              varchar(100) not null,
+    cb_player             varchar(100) not null,
+    cb_team               varchar(100) not null
+);
+
+CREATE TABLE wins(
+    w_player               varchar(100) not null,
+    w_coach                varchar(100) not null,
+    w_team                 varchar(100) not null,
+    w_playoffseries        varchar(100) not null
+);
