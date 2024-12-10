@@ -18,6 +18,16 @@ def paginate(query, params, page):
     params.extend([PER_PAGE, offset])
     return query, params
 
+@app.route('/home')
+def home():
+    """Home page with a welcome message."""
+    return render_template('home.html')
+
+@app.route('/')
+def root():
+    """Redirect root URL to /home."""
+    return redirect(url_for('home'))
+
 @app.route('/search', methods=['GET', 'POST'])
 def search():
     """Search or sort players based on form input."""
@@ -76,8 +86,6 @@ def search():
         'search.html', players=players, player_name=player_name, team=team, position=position,
         sort_by=sort_by, page=page, total=total, per_page=PER_PAGE
     )
-
-
 
 @app.route('/add', methods=['GET', 'POST'])
 def add_player():

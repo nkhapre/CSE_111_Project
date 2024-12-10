@@ -1,0 +1,8 @@
+TO SETUP AND GET RUNNING
+After cloning repo:
+Make sure you have python3 installed
+Make sure to set up a virtual environment as this project uses Flask to run
+Activate your virtual environment in terminal:
+    WINDOWS:
+    MAC: source {name of virtual environment}/bin/activate
+python3 project.py
