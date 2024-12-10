@@ -148,10 +148,68 @@ def searchc():
     connection.close()
 
     return render_template(
-        'searchc.html', coaches=coaches, player_name=coach_name, team=team, 
+        'searchc.html', coaches=coaches, coach_name=coach_name, team=team, 
         coach_key=coach_key, sort_by=sort_by, page=page, total=total, per_page=PER_PAGE
     )
 
+@app.route('/searcht', methods=['GET', 'POST'])
+def searcht():
+    """Search or sort teams based on form input."""
+    team_name = request.form.get('team_name', '').strip()
+    team_city = request.form.get('team_city', '').strip()  # New: Get c_key from the form
+    team_conference = request.form.get('team_conference', '').strip()  # New: Get c_key from the form
+    sort_by = request.form.get('sort_by', 't_name').strip()
+    action = request.form.get('action', 'search')  # Determine if it's a search or sort action
+    page = int(request.args.get('page', 1))
+
+    # Base query
+    query = 'SELECT * FROM team WHERE 1=1'
+    params = []
+
+    # Add conditions for search fields
+    if team_name:
+        query += ' AND t_name LIKE ?'
+        params.append(f"%{team_name}%")
+    if team_city:
+        query += ' AND t_city LIKE ?'
+        params.append(f"%{team_city}%")
+    if team_conference:  # New: Add c_key filter
+        query += ' AND t_conference = ?'
+        params.append(team_conference)
+
+    # Add sorting if the action is "sort"
+    if action == 'sort':
+        query += f' ORDER BY {sort_by}'
+    else:
+        # Default sorting
+        query += ' ORDER BY t_name'
+
+    # Add pagination
+    offset = (page - 1) * PER_PAGE
+    query += ' LIMIT ? OFFSET ?'
+    params.extend([PER_PAGE, offset])
+
+    # Execute query
+    connection = get_db_connection()
+    teams = connection.execute(query, params).fetchall()
+
+    # Count total results
+    total_query = 'SELECT COUNT(*) FROM team WHERE 1=1'
+    total_params = params[:-2]  # Exclude pagination params
+    if team_name:
+        total_query += ' AND t_name LIKE ?'
+    if team_city:
+        total_query += ' AND t_city LIKE ?'
+    if team_conference:
+        total_query += ' AND t_conference = ?'
+
+    total = connection.execute(total_query, total_params).fetchone()[0]
+    connection.close()
+
+    return render_template(
+        'searcht.html', teams=teams, team_name=team_name, team_city=team_city, 
+        team_conference = team_conference, sort_by=sort_by, page=page, total=total, per_page=PER_PAGE
+    )
 
 
 
@@ -266,8 +324,6 @@ def delete_coach(c_key):
     return redirect('/home')
 
 
-
-
 @app.route('/delete/<int:p_key>', methods=['POST'])
 def delete_player(p_key):
     """Delete a player."""
@@ -293,6 +349,16 @@ def coaches():
     coaches = connection.execute('SELECT * FROM coach').fetchall()
     connection.close()
     return render_template('coaches.html', coaches=coaches)
+
+@app.route('/teams', methods = ['GET', 'POST'])
+def teams():
+    """Display all teams."""
+    connection = get_db_connection()
+    teams = connection.execute('SELECT * FROM team').fetchall()
+    connection.close()
+    return render_template('teams.html', teams=teams)
+    
+
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Teams</title>
+</head>
+<body>
+    <h1>Search Teams</h1>
+    <form method="POST" action="/searcht">
+        <label for="team_name">Team Name:</label>
+        <input type="text" id="team_name" name="team_name" value="{{ team_name }}">
+        
+        <label for="team">City:</label>
+        <input type="text" id="team_city" name="team_city" value="{{ team_city }}">
+        
+    
+        <label for="conference">Team Conference:</label> 
+        <input type="text" id="team_conference" name="team_conference" value="{{ team_conference }}">
+        
+        <label for="sort_by">Sort By:</label>
+        <select id="sort_by" name="sort_by">
+            <option value="t_name" {% if sort_by == 't_name' %}selected{% endif %}>Name</option>
+            <option value="t_city" {% if sort_by == 't_city' %}selected{% endif %}>City</option>
+            <option value="t_conference" {% if sort_by == 't_conference' %}selected{% endif %}>Conference</option>
+        </select>
+        
+        <button type="submit" name="action" value="search">Search</button>
+        <button type="submit" name="action" value="sort">Sort</button>
+    </form>
+
+    {% if teams %}
+    <h2>Search Results</h2>
+    <table border="1">
+        <tr>
+            <th>Name</th>
+            <th>City</th>
+            <th>Conference</th>
+             <!-- New: Add Key column -->
+        </tr>
+        {% for team in teams %}
+        <tr>
+            <td>{{ team['t_name'] }}</td>
+            <td>{{ team['t_city'] }}</td>
+            <td>{{ team['t_conference'] }}</td>           
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
+    
+</body>
+</html>
