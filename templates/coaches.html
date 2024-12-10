@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coaches List</title>
+</head>
+<body>
+    <h1>All Coaches</h1>
+    <a href="/addc">Add New Coach</a>
+    <table border="1">
+        <tr>
+            <th>Name</th>
+            <th>Team</th>
+            <th>Key</th>
+            <th>Season</th>
+        </tr>
+        {% for coach in coaches %}
+        <tr>
+            <td>{{ coach['c_name'] }}</td>
+            <td>{{ coach['c_team'] }}</td>
+            <td>{{ coach['c_key'] }}</td>
+            <td>{{ coach['c_season'] }}</td>
+            <td>
+                <a href="/editc/{{ coach['c_key'] }}">Edit</a>
+                <form method="POST" action="/deletec/{{ coach['c_key'] }}" style="display:inline;">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Coaches</title>
+</head>
+<body>
+    <h1>Search Coaches</h1>
+    <form method="POST" action="/searchc">
+        <label for="coach_name">coach Name:</label>
+        <input type="text" id="coach_name" name="coach_name" value="{{ coach_name }}">
+        
+        <label for="team">Team:</label>
+        <input type="text" id="team" name="team" value="{{ team }}">
+        
+        
+        <label for="coach_key">Coach Key:</label> <!-- New: Add input for coach key -->
+        <input type="text" id="coach_key" name="coach_key" value="{{ coach_key }}">
+
+        <label for="season">Coach Season:</label> <!-- New: Add input for coach key -->
+        <input type="text" id="season" name="season" value="{{ season }}">
+        
+        <label for="sort_by">Sort By:</label>
+        <select id="sort_by" name="sort_by">
+            <option value="c_name" {% if sort_by == 'c_name' %}selected{% endif %}>Name</option>
+            <option value="c_team" {% if sort_by == 'c_team' %}selected{% endif %}>Team</option>
+            <option value="c_key" {% if sort_by == 'c_key' %}selected{% endif %}>Key</option>
+            <option value="c_season" {% if sort_by == 'c_season' %}selected{% endif %}>Season</option>
+        </select>
+        
+        <button type="submit" name="action" value="search">Search</button>
+        <button type="submit" name="action" value="sort">Sort</button>
+    </form>
+
+    {% if coaches %}
+    <h2>Search Results</h2>
+    <table border="1">
+        <tr>
+            <th>Name</th>
+            <th>Team</th>
+            <th>Key</th>
+            <th>Season</th>
+             <!-- New: Add Key column -->
+            <th>Actions</th>
+        </tr>
+        {% for coach in coaches %}
+        <tr>
+            <td>{{ coach['c_name'] }}</td>
+            <td>{{ coach['c_team'] }}</td>
+            <td>{{ coach['c_key'] }}</td>
+            <td>{{ coach['c_season'] }}</td>
+             <!-- New: Display coach Key -->
+            <td>
+                <a href="/edit/{{ coach['c_key'] }}">Edit</a>
+                <form method="POST" action="/deletec/{{ coach['c_key'] }}" style="display:inline;">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
+    
+</body>
+</html>

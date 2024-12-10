@@ -14,6 +14,7 @@
             <th>Number</th>
             <th>Team</th>
             <th>Position</th>
+            <th>Key</th>
             <th>Season</th>
             <th>Actions</th>
         </tr>
@@ -23,6 +24,7 @@
             <td>{{ player['p_number'] }}</td>
             <td>{{ player['p_team'] }}</td>
             <td>{{ player['p_position'] }}</td>
+            <td>{{ player['p_key'] }}</td>
             <td>{{ player['p_season'] }}</td>
             <td>
                 <a href="/edit/{{ player['p_key'] }}">Edit</a>
@@ -33,11 +35,8 @@
         </tr>
         {% endfor %}
     </table>
+   
 
-    <div>
-        <a href="/?page={{ page - 1 }}" {% if page == 1 %}style="visibility: hidden;"{% endif %}>Previous</a>
-        Page {{ page }}
-        <a href="/?page={{ page + 1 }}" {% if page * per_page >= total %}style="visibility: hidden;"{% endif %}>Next</a>
-    </div>
+    
 </body>
 </html>

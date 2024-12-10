@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Coach</title>
+</head>
+<body>
+    <h1>Edit Coach</h1>
+    <form method="POST" action="/editc/{{ coach['c_key'] }}">
+        <label>Name:</label>
+        <input type="text" name="c_name" value="{{ coach['c_name'] }}" required>
+        <label>Team:</label>
+        <input type="text" name="c_team" value="{{ coach['c_team'] }}" required>
+        <label>Key:</label>
+        <input type="text" name="c_key" value="{{ coach['c_key'] }}" required>
+        <br>
+        <label>Season:</label>
+        <input type="text" name="c_season" value="{{ coach['c_season'] }}" required>
+        <br>
+        
+        <button type="submit">Save Changes</button>
+    </form>
+</body>
+</html>

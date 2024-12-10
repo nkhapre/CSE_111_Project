@@ -34,6 +34,7 @@ def search():
     player_name = request.form.get('player_name', '').strip()
     team = request.form.get('team', '').strip()
     position = request.form.get('position', '').strip()
+    player_key = request.form.get('player_key', '').strip()  # New: Get p_key from the form
     sort_by = request.form.get('sort_by', 'p_name').strip()
     action = request.form.get('action', 'search')  # Determine if it's a search or sort action
     page = int(request.args.get('page', 1))
@@ -52,6 +53,9 @@ def search():
     if position:
         query += ' AND p_position LIKE ?'
         params.append(f"%{position}%")
+    if player_key:  # New: Add p_key filter
+        query += ' AND p_key = ?'
+        params.append(player_key)
 
     # Add sorting if the action is "sort"
     if action == 'sort':
@@ -78,14 +82,81 @@ def search():
         total_query += ' AND p_team LIKE ?'
     if position:
         total_query += ' AND p_position LIKE ?'
+    if player_key:
+        total_query += ' AND p_key = ?'
 
     total = connection.execute(total_query, total_params).fetchone()[0]
     connection.close()
 
     return render_template(
         'search.html', players=players, player_name=player_name, team=team, position=position,
-        sort_by=sort_by, page=page, total=total, per_page=PER_PAGE
+        player_key=player_key, sort_by=sort_by, page=page, total=total, per_page=PER_PAGE
     )
+
+@app.route('/searchc', methods=['GET', 'POST'])
+def searchc():
+    """Search or sort coachs based on form input."""
+    coach_name = request.form.get('coach_name', '').strip()
+    team = request.form.get('team', '').strip()
+    coach_key = request.form.get('coach_key', '').strip()  # New: Get c_key from the form
+    sort_by = request.form.get('sort_by', 'c_name').strip()
+    action = request.form.get('action', 'search')  # Determine if it's a search or sort action
+    page = int(request.args.get('page', 1))
+
+    # Base query
+    query = 'SELECT * FROM coach WHERE 1=1'
+    params = []
+
+    # Add conditions for search fields
+    if coach_name:
+        query += ' AND c_name LIKE ?'
+        params.append(f"%{coach_name}%")
+    if team:
+        query += ' AND c_team LIKE ?'
+        params.append(f"%{team}%")
+    if coach_key:  # New: Add c_key filter
+        query += ' AND c_key = ?'
+        params.append(coach_key)
+
+    # Add sorting if the action is "sort"
+    if action == 'sort':
+        query += f' ORDER BY {sort_by}'
+    else:
+        # Default sorting
+        query += ' ORDER BY c_name'
+
+    # Add pagination
+    offset = (page - 1) * PER_PAGE
+    query += ' LIMIT ? OFFSET ?'
+    params.extend([PER_PAGE, offset])
+
+    # Execute query
+    connection = get_db_connection()
+    coaches = connection.execute(query, params).fetchall()
+
+    # Count total results
+    total_query = 'SELECT COUNT(*) FROM coach WHERE 1=1'
+    total_params = params[:-2]  # Exclude pagination params
+    if coach_name:
+        total_query += ' AND c_name LIKE ?'
+    if team:
+        total_query += ' AND c_team LIKE ?'
+    if coach_key:
+        total_query += ' AND c_key = ?'
+
+    total = connection.execute(total_query, total_params).fetchone()[0]
+    connection.close()
+
+    return render_template(
+        'searchc.html', coaches=coaches, player_name=coach_name, team=team, 
+        coach_key=coach_key, sort_by=sort_by, page=page, total=total, per_page=PER_PAGE
+    )
+
+
+
+
+
+
 
 @app.route('/add', methods=['GET', 'POST'])
 def add_player():
@@ -108,6 +179,28 @@ def add_player():
 
         return redirect('/')
     return render_template('add.html')
+
+
+
+@app.route('/addc', methods=['GET', 'POST'])
+def add_coach():
+    """Add a new coach."""
+    if request.method == 'POST':
+        name = request.form['c_name']
+        team = request.form['c_team']
+        key = request.form['c_key']
+        season = request.form['c_season']
+
+        connection = get_db_connection()
+        connection.execute(
+            'INSERT INTO coach (c_name, c_team, c_key, c_season) VALUES (?, ?, ?, ?)',
+            (name, team, key, season)
+        )
+        connection.commit()
+        connection.close()
+
+        return redirect('/')
+    return render_template('addc.html')
 
 @app.route('/edit/<int:p_key>', methods=['GET', 'POST'])
 def edit_player(p_key):
@@ -136,6 +229,45 @@ def edit_player(p_key):
     connection.close()
     return render_template('edit.html', player=player)
 
+
+
+@app.route('/editc/<int:c_key>', methods=['GET', 'POST'])
+def edit_coach(c_key):
+    """Edit an existing coach's details."""
+    connection = get_db_connection()
+    coach = connection.execute('SELECT * FROM coach WHERE c_key = ?', (c_key,)).fetchone()
+    if not coach:
+        connection.close()
+        return redirect('/')
+
+    if request.method == 'POST':
+        name = request.form['c_name']
+        team = request.form['c_team']
+        season = request.form['c_season']
+
+        connection.execute(
+            'UPDATE coach SET c_name = ?, c_team = ?, c_season = ? WHERE c_key = ?',
+            (name, team, season, c_key)
+        )
+        connection.commit()
+        connection.close()
+        return redirect('/')
+
+    connection.close()
+    return render_template('editc.html', coach=coach)
+
+@app.route('/deletec/<int:c_key>', methods=['POST'])
+def delete_coach(c_key):
+    """Delete a coach."""
+    connection = get_db_connection()
+    connection.execute('DELETE FROM coach WHERE c_key = ?', (c_key,))
+    connection.commit()
+    connection.close()
+    return redirect('/home')
+
+
+
+
 @app.route('/delete/<int:p_key>', methods=['POST'])
 def delete_player(p_key):
     """Delete a player."""
@@ -143,7 +275,24 @@ def delete_player(p_key):
     connection.execute('DELETE FROM player WHERE p_key = ?', (p_key,))
     connection.commit()
     connection.close()
-    return redirect('/')
+    return redirect('/home')
+
+        
+@app.route('/allplayers', methods=['GET', 'POST'])
+def index():
+    """Display all players."""
+    connection = get_db_connection()
+    players = connection.execute('SELECT * FROM player').fetchall()
+    connection.close()
+    return render_template('index.html', players=players)
+
+@app.route('/allcoaches', methods=['GET', 'POST'])
+def coaches():
+    """Display all coaches."""
+    connection = get_db_connection()
+    coaches = connection.execute('SELECT * FROM coach').fetchall()
+    connection.close()
+    return render_template('coaches.html', coaches=coaches)
 
 if __name__ == '__main__':
     app.run(debug=True)

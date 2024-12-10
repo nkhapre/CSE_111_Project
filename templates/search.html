@@ -17,6 +17,9 @@
         <label for="position">Position:</label>
         <input type="text" id="position" name="position" value="{{ position }}">
         
+        <label for="player_key">Player Key:</label> <!-- New: Add input for player key -->
+        <input type="text" id="player_key" name="player_key" value="{{ player_key }}">
+        
         <label for="sort_by">Sort By:</label>
         <select id="sort_by" name="sort_by">
             <option value="p_name" {% if sort_by == 'p_name' %}selected{% endif %}>Name</option>
@@ -28,6 +31,7 @@
         <button type="submit" name="action" value="search">Search</button>
         <button type="submit" name="action" value="sort">Sort</button>
     </form>
+
     {% if players %}
     <h2>Search Results</h2>
     <table border="1">
@@ -37,6 +41,7 @@
             <th>Team</th>
             <th>Position</th>
             <th>Season</th>
+            <th>Key</th> <!-- New: Add Key column -->
             <th>Actions</th>
         </tr>
         {% for player in players %}
@@ -46,6 +51,7 @@
             <td>{{ player['p_team'] }}</td>
             <td>{{ player['p_position'] }}</td>
             <td>{{ player['p_season'] }}</td>
+            <td>{{ player['p_key'] }}</td> <!-- New: Display Player Key -->
             <td>
                 <a href="/edit/{{ player['p_key'] }}">Edit</a>
                 <form method="POST" action="/delete/{{ player['p_key'] }}" style="display:inline;">
