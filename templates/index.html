@@ -25,8 +25,8 @@
             <td>{{ player['p_position'] }}</td>
             <td>{{ player['p_season'] }}</td>
             <td>
-                <a href="/edit/{{ player['id'] }}">Edit</a>
-                <form method="POST" action="/delete/{{ player['id'] }}" style="display:inline;">
+                <a href="/edit/{{ player['p_key'] }}">Edit</a>
+                <form method="POST" action="/delete/{{ player['p_key'] }}" style="display:inline;">
                     <button type="submit">Delete</button>
                 </form>
             </td>

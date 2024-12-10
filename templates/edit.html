@@ -7,7 +7,7 @@
 </head>
 <body>
     <h1>Edit Player</h1>
-    <form method="POST" action="/edit/{{ player['id'] }}">
+    <form method="POST" action="/edit/{{ player['p_key'] }}">
         <label>Name:</label>
         <input type="text" name="p_name" value="{{ player['p_name'] }}" required>
         <br>
