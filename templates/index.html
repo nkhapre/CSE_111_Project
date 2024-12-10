@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player List</title>
+</head>
+<body>
+    <h1>All Players</h1>
+    <a href="/add">Add New Player</a>
+    <table border="1">
+        <tr>
+            <th>Name</th>
+            <th>Number</th>
+            <th>Team</th>
+            <th>Position</th>
+            <th>Season</th>
+            <th>Actions</th>
+        </tr>
+        {% for player in players %}
+        <tr>
+            <td>{{ player['p_name'] }}</td>
+            <td>{{ player['p_number'] }}</td>
+            <td>{{ player['p_team'] }}</td>
+            <td>{{ player['p_position'] }}</td>
+            <td>{{ player['p_season'] }}</td>
+            <td>
+                <a href="/edit/{{ player['id'] }}">Edit</a>
+                <form method="POST" action="/delete/{{ player['id'] }}" style="display:inline;">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <div>
+        <a href="/?page={{ page - 1 }}" {% if page == 1 %}style="visibility: hidden;"{% endif %}>Previous</a>
+        Page {{ page }}
+        <a href="/?page={{ page + 1 }}" {% if page * per_page >= total %}style="visibility: hidden;"{% endif %}>Next</a>
+    </div>
+</body>
+</html>

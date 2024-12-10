@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Players</title>
+</head>
+<body>
+    <h1>Search Players</h1>
+    <form method="POST" action="/search">
+        <label for="player_name">Player Name:</label>
+        <input type="text" id="player_name" name="player_name" value="{{ player_name }}">
+        
+        <label for="team">Team:</label>
+        <input type="text" id="team" name="team" value="{{ team }}">
+        
+        <label for="position">Position:</label>
+        <input type="text" id="position" name="position" value="{{ position }}">
+        
+        <label for="sort_by">Sort By:</label>
+        <select id="sort_by" name="sort_by">
+            <option value="p_name" {% if sort_by == 'p_name' %}selected{% endif %}>Name</option>
+            <option value="p_team" {% if sort_by == 'p_team' %}selected{% endif %}>Team</option>
+            <option value="p_position" {% if sort_by == 'p_position' %}selected{% endif %}>Position</option>
+            <option value="p_season" {% if sort_by == 'p_season' %}selected{% endif %}>Season</option>
+        </select>
+        
+        <button type="submit">Search</button>
+    </form>
+
+    {% if players %}
+    <h2>Search Results</h2>
+    <table border="1">
+        <tr>
+            <th>Name</th>
+            <th>Number</th>
+            <th>Team</th>
+            <th>Position</th>
+            <th>Season</th>
+            <th>Actions</th>
+        </tr>
+        {% for player in players %}
+        <tr>
+            <td>{{ player['p_name'] }}</td>
+            <td>{{ player['p_number'] }}</td>
+            <td>{{ player['p_team'] }}</td>
+            <td>{{ player['p_position'] }}</td>
+            <td>{{ player['p_season'] }}</td>
+            <td>
+                <a href="/edit/{{ player['id'] }}">Edit</a>
+                <form method="POST" action="/delete/{{ player['id'] }}" style="display:inline;">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
+    <div>
+        <a href="/search?page={{ page - 1 }}" {% if page == 1 %}style="visibility: hidden;"{% endif %}>Previous</a>
+        Page {{ page }}
+        <a href="/search?page={{ page + 1 }}" {% if page * per_page >= total %}style="visibility: hidden;"{% endif %}>Next</a>
+    </div>
+</body>
+</html>

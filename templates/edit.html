@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Player</title>
+</head>
+<body>
+    <h1>Edit Player</h1>
+    <form method="POST" action="/edit/{{ player['id'] }}">
+        <label>Name:</label>
+        <input type="text" name="p_name" value="{{ player['p_name'] }}" required>
+        <br>
+        <label>Number:</label>
+        <input type="number" name="p_number" value="{{ player['p_number'] }}" required>
+        <br>
+        <label>Team:</label>
+        <input type="text" name="p_team" value="{{ player['p_team'] }}" required>
+        <br>
+        <label>Position:</label>
+        <input type="text" name="p_position" value="{{ player['p_position'] }}" required>
+        <br>
+        <label>Season:</label>
+        <input type="text" name="p_season" value="{{ player['p_season'] }}" required>
+        <br>
+        <button type="submit">Save Changes</button>
+    </form>
+</body>
+</html>
