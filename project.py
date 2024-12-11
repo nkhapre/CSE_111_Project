@@ -37,7 +37,6 @@ def search():
     player_key = request.form.get('player_key', '').strip()  # New: Get p_key from the form
     sort_by = request.form.get('sort_by', 'p_name').strip()
     action = request.form.get('action', 'search')  # Determine if it's a search or sort action
-    page = int(request.args.get('page', 1))
 
     # Base query
     query = 'SELECT * FROM player WHERE 1=1'
@@ -64,18 +63,13 @@ def search():
         # Default sorting
         query += ' ORDER BY p_name'
 
-    # Add pagination
-    offset = (page - 1) * PER_PAGE
-    query += ' LIMIT ? OFFSET ?'
-    params.extend([PER_PAGE, offset])
-
     # Execute query
     connection = get_db_connection()
     players = connection.execute(query, params).fetchall()
 
-    # Count total results
+    # Count total results (optional, in case you want to display the total count)
     total_query = 'SELECT COUNT(*) FROM player WHERE 1=1'
-    total_params = params[:-2]  # Exclude pagination params
+    total_params = params
     if player_name:
         total_query += ' AND p_name LIKE ?'
     if team:
@@ -90,7 +84,7 @@ def search():
 
     return render_template(
         'search.html', players=players, player_name=player_name, team=team, position=position,
-        player_key=player_key, sort_by=sort_by, page=page, total=total, per_page=PER_PAGE
+        player_key=player_key, sort_by=sort_by, total=total
     )
 
 @app.route('/searchc', methods=['GET', 'POST'])

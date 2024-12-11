@@ -10,14 +10,14 @@
     <table border="1">
         <tr>
             <th>Name</th>
+            <th>Abbreviation</th>
             <th>City</th>
-            <th>Conference</th>
         </tr>
         {% for team in teams %}
         <tr>
             <td>{{ team['t_name'] }}</td>
+            <td>{{ team['t_abbreviation'] }}</td>
             <td>{{ team['t_city'] }}</td>
-            <td>{{ team['t_conference'] }}</td>
         </tr>
         {% endfor %}
     </table>

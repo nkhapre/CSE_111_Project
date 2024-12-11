@@ -62,11 +62,5 @@
         {% endfor %}
     </table>
     {% endif %}
-
-    <div>
-        <a href="/search?page={{ page - 1 }}" {% if page == 1 %}style="visibility: hidden;"{% endif %}>Previous</a>
-        Page {{ page }}
-        <a href="/search?page={{ page + 1 }}" {% if page * per_page >= total %}style="visibility: hidden;"{% endif %}>Next</a>
-    </div>
 </body>
 </html>
