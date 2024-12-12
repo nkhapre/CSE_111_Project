@@ -26,10 +26,10 @@ def search():
     """Search or sort players based on form input."""
     # Use appropriate method
     method = request.form if request.method == 'POST' else request.args
-    player_name = method.get('p_name', '').strip()
-    team = method.get('p_team', '').strip()
-    position = method.get('p_position', '').strip()
-    player_key = method.get('p_key', '').strip()
+    player_name = method.get('player_name', '').strip()
+    team = method.get('team', '').strip()
+    position = method.get('position', '').strip()
+    player_key = method.get('player_key', '').strip()
     sort_by = method.get('sort_by', 'p_name').strip()
     action = method.get('action', 'search')
 
@@ -58,14 +58,12 @@ def search():
     print("Final Query:", query)  # Debug
     print("Params:", params)      # Debug
     players = connection.execute(query, params).fetchall()
-
-    # Optional: Count total results
-    total = len(players)
+    
     connection.close()
 
     return render_template(
         'search.html', players=players, player_name=player_name, team=team, position=position,
-        player_key=player_key, sort_by=sort_by, total=total
+        player_key=player_key, sort_by=sort_by
     )
 
 @app.route('/searchc', methods=['GET', 'POST'])
@@ -106,7 +104,8 @@ def searchc():
 
     # Count total results
     total_query = 'SELECT COUNT(*) FROM coach WHERE 1=1'
-    total_params = params[:-2]  # Exclude pagination params
+    total_params = list(params)
+    print('Total params: ', total_params)
     if coach_name:
         total_query += ' AND c_name LIKE ?'
     if team:
@@ -178,9 +177,6 @@ def searcht():
 
 
 
-
-
-
 @app.route('/add', methods=['GET', 'POST'])
 def add_player():
     """Add a new player."""
@@ -205,7 +201,7 @@ def add_player():
     
     connection = get_db_connection()
     cursor = connection.cursor()
-    cursor.execute("SELECT MAX(PLAYER_ID) FROM career_stats")
+    cursor.execute("SELECT MAX(p_key) FROM player")
     max_player_id = cursor.fetchone()[0] 
     connection.close()
 
@@ -232,7 +228,14 @@ def add_coach():
         connection.close()
 
         return redirect('/')
-    return render_template('addc.html')
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    cursor.execute("SELECT MAX(c_key) FROM coach")
+    max_coach_id = cursor.fetchone()[0] 
+    connection.close()
+
+    next_coach_id = max_coach_id + 1 if max_coach_id is not None else 1
+    return render_template('addc.html', next_coach_id=next_coach_id)
 
 @app.route('/edit/<int:p_key>', methods=['GET', 'POST'])
 def edit_player(p_key):
@@ -274,11 +277,10 @@ def edit_coach(c_key):
     if request.method == 'POST':
         name = request.form['c_name']
         team = request.form['c_team']
-        season = request.form['c_season']
 
         connection.execute(
-            'UPDATE coach SET c_name = ?, c_team = ?, c_season = ? WHERE c_key = ?',
-            (name, team, season, c_key)
+            'UPDATE coach SET c_name = ?, c_team = ? WHERE c_key = ?',
+            (name, team, c_key)
         )
         connection.commit()
         connection.close()

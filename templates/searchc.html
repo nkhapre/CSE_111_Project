@@ -8,7 +8,7 @@
 <body>
     <h1>Search Coaches</h1>
     <form method="POST" action="/searchc">
-        <label for="coach_name">coach Name:</label>
+        <label for="coach_name">Coach Name:</label>
         <input type="text" id="coach_name" name="coach_name" value="{{ coach_name }}">
         
         <label for="team">Team:</label>
@@ -27,6 +27,7 @@
         <button type="submit" name="action" value="search">Search</button>
         <button type="submit" name="action" value="sort">Sort</button>
     </form>
+    <a href="/home">Back to Home</a>
 
     {% if coaches %}
     <h2>Search Results</h2>
