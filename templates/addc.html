@@ -13,10 +13,14 @@
         <input type="text" name="c_name" required>
         <br>
         <label>Team:</label>
-        <input type="text" name="c_team" required>
+        <select name="c_team" required>
+            {% for team in teams %}
+                <option value="{{ team }}">{{ team }}</option>
+            {% endfor %}
+        </select>
         <br>
         <label>Key:</label>
-        <input type = "number" name = "c_key" value="{{ next_coach_id }}" required>
+        <input type="number" name="c_key" value="{{ next_coach_id }}" required>
         <br>
         <button type="submit">Add Coach</button>
     </form>

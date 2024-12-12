@@ -26,7 +26,11 @@
             <option value="p_team" {% if sort_by == 'p_team' %}selected{% endif %}>Team</option>
             <option value="p_position" {% if sort_by == 'p_position' %}selected{% endif %}>Position</option>
             <option value="p_key" {% if sort_by == 'p_key' %}selected{% endif %}>Key</option>
+            <option value="career_stats.PTS" {% if sort_by == 'career_stats.PTS' %}selected{% endif %}>PTS</option>
+            <option value="career_stats.AST" {% if sort_by == 'career_stats.AST' %}selected{% endif %}>AST</option>
+            <option value="career_stats.REB" {% if sort_by == 'career_stats.REB' %}selected{% endif %}>REB</option>
         </select>
+
         
         <button type="submit" name="action" value="search">Search</button>
         <button type="submit" name="action" value="sort">Sort</button>
@@ -41,6 +45,9 @@
             <th>Team</th>
             <th>Position</th>
             <th>Key</th> <!-- New: Add Key column -->
+            <th>PTS</th>
+            <th>AST</th>
+            <th>REB</th>
             <th>Actions</th>
         </tr>
         {% for player in players %}
@@ -49,6 +56,9 @@
             <td>{{ player['p_team'] }}</td>
             <td>{{ player['p_position'] }}</td>
             <td>{{ player['p_key'] }}</td> <!-- New: Display Player Key -->
+            <td>{{ player['PTS'] }}</td>
+            <td>{{ player['AST'] }}</td>
+            <td>{{ player['REB'] }}</td>
             <td>
                 <a href="/edit/{{ player['p_key'] }}">Edit</a>
                 <form method="POST" action="/delete/{{ player['p_key'] }}" style="display:inline;">

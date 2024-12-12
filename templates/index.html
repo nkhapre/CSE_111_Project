@@ -15,11 +15,9 @@
             <th>Position</th>
             <th>Key</th>
             <th>Team</th>
-            <th>Games Played</th>
-            <th>Games Started</th>
-            <th>Career Minutes</th>
-            <th>Field Goals Made</th>
-            <th>Field Goals Attempted</th>
+            <th>PTS</th>
+            <th>AST</th>
+            <th>REB</th>
             <th>Actions</th>
         </tr>
         {% for player in players %}
@@ -28,11 +26,9 @@
             <td>{{ player['p_position'] }}</td>
             <td>{{ player['p_key'] }}</td>
             <td>{{ player['p_team'] }}</td>
-            <td>{{ player['GP'] }}</td>
-            <td>{{ player['GS'] }}</td>
-            <td>{{ player['MIN'] }}</td>
-            <td>{{ player['FGM'] }}</td>
-            <td>{{ player['FGA'] }}</td>
+            <td>{{ player['PTS'] }}</td>
+            <td>{{ player['AST'] }}</td>
+            <td>{{ player['REB'] }}</td>
             <td>
                 <a href="/edit/{{ player['p_key'] }}">Edit</a>
                 <form method="POST" action="/delete/{{ player['p_key'] }}" style="display:inline;">

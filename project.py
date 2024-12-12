@@ -33,25 +33,37 @@ def search():
     sort_by = method.get('sort_by', 'p_name').strip()
     action = method.get('action', 'search')
 
-    query = "SELECT * FROM player WHERE 1=1"
+    # Validate sort_by to prevent SQL injection
+    valid_sort_columns = ['p_name', 'p_team', 'p_position', 'p_key', 'career_stats.PTS', 'career_stats.AST', 'career_stats.REB']
+    if sort_by not in valid_sort_columns:
+        sort_by = 'p_name'  # Default fallback
+
+    query = """SELECT player.p_key AS p_key, player.p_name, player.p_team, player.p_position, 
+                      career_stats.PTS, career_stats.AST, career_stats.REB
+               FROM player
+               JOIN career_stats ON career_stats.p_key = player.p_key
+               WHERE 1=1"""
     params = []
 
     # Add filters
     if player_name:
-        query += ' AND p_name LIKE ?'
+        query += ' AND player.p_name LIKE ?'
         params.append(f"%{player_name}%")
     if team:
-        query += ' AND p_team LIKE ?'
+        query += ' AND player.p_team LIKE ?'
         params.append(f"%{team}%")
     if position:
-        query += ' AND p_position LIKE ?'
+        query += ' AND player.p_position LIKE ?'
         params.append(f"%{position}%")
     if player_key:
-        query += ' AND p_key = ?'
+        query += ' AND player.p_key = ?'
         params.append(player_key)
 
-    # Sorting
-    query += f' ORDER BY {sort_by}' if action == 'sort' else ' ORDER BY p_name'
+    # Sorting: If sorting by PTS, AST, or REB, apply DESC
+    if sort_by in ['career_stats.PTS', 'career_stats.AST', 'career_stats.REB']:
+        query += f' ORDER BY {sort_by} DESC'  # Descending order for stats columns
+    else:
+        query += f' ORDER BY {sort_by}'  # Default sorting for other columns
 
     # Execute query
     connection = get_db_connection()
@@ -65,6 +77,8 @@ def search():
         'search.html', players=players, player_name=player_name, team=team, position=position,
         player_key=player_key, sort_by=sort_by
     )
+
+
 
 @app.route('/searchc', methods=['GET', 'POST'])
 def searchc():
@@ -235,27 +249,51 @@ def add_coach():
     """Add a new coach."""
     if request.method == 'POST':
         name = request.form['c_name']
-        team = request.form['c_team']
+        team_name = request.form['c_team']
         key = request.form['c_key']
-        season = request.form['c_season']
 
+        # Get the database connection
         connection = get_db_connection()
-        connection.execute(
-            'INSERT INTO coach (c_name, c_team, c_key, c_season) VALUES (?, ?, ?, ?)',
-            (name, team, key, season)
+        cursor = connection.cursor()
+
+        # Query the team table to find the corresponding team ID
+        cursor.execute('SELECT id FROM team WHERE t_name = ?', (team_name,))
+        team_id = cursor.fetchone()
+
+        if team_id is None:
+            # Handle the case where the team doesn't exist in the team table
+            connection.close()
+            return "Team not found. Please ensure the team exists before adding a coach.", 400
+
+        team_id = team_id[0]  # Extract the team ID from the fetched row
+
+        # Insert the new coach into the coach table
+        cursor.execute(
+            'INSERT INTO coach (c_name, c_team, c_team_id, c_key) VALUES (?, ?, ?, ?)',
+            (name, team_name, team_id, key)
         )
         connection.commit()
         connection.close()
 
         return redirect('/')
+
+    # For GET request: fetch team names and calculate the next coach ID
     connection = get_db_connection()
     cursor = connection.cursor()
+
+    # Fetch all team names
+    cursor.execute("SELECT t_name FROM team")
+    teams = [row[0] for row in cursor.fetchall()]  # Get a list of team names
+
+    # Get the next coach ID
     cursor.execute("SELECT MAX(c_key) FROM coach")
-    max_coach_id = cursor.fetchone()[0] 
+    max_coach_id = cursor.fetchone()[0]
     connection.close()
 
     next_coach_id = max_coach_id + 1 if max_coach_id is not None else 1
-    return render_template('addc.html', next_coach_id=next_coach_id)
+    return render_template('addc.html', next_coach_id=next_coach_id, teams=teams)
+
+
 
 @app.route('/edit/<int:p_key>', methods=['GET', 'POST'])
 def edit_player(p_key):
