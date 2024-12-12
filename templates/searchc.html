@@ -14,19 +14,14 @@
         <label for="team">Team:</label>
         <input type="text" id="team" name="team" value="{{ team }}">
         
-        
         <label for="coach_key">Coach Key:</label> <!-- New: Add input for coach key -->
         <input type="text" id="coach_key" name="coach_key" value="{{ coach_key }}">
-
-        <label for="season">Coach Season:</label> <!-- New: Add input for coach key -->
-        <input type="text" id="season" name="season" value="{{ season }}">
         
         <label for="sort_by">Sort By:</label>
         <select id="sort_by" name="sort_by">
             <option value="c_name" {% if sort_by == 'c_name' %}selected{% endif %}>Name</option>
             <option value="c_team" {% if sort_by == 'c_team' %}selected{% endif %}>Team</option>
             <option value="c_key" {% if sort_by == 'c_key' %}selected{% endif %}>Key</option>
-            <option value="c_season" {% if sort_by == 'c_season' %}selected{% endif %}>Season</option>
         </select>
         
         <button type="submit" name="action" value="search">Search</button>
@@ -40,7 +35,6 @@
             <th>Name</th>
             <th>Team</th>
             <th>Key</th>
-            <th>Season</th>
              <!-- New: Add Key column -->
             <th>Actions</th>
         </tr>
@@ -49,7 +43,6 @@
             <td>{{ coach['c_name'] }}</td>
             <td>{{ coach['c_team'] }}</td>
             <td>{{ coach['c_key'] }}</td>
-            <td>{{ coach['c_season'] }}</td>
              <!-- New: Display coach Key -->
             <td>
                 <a href="/edit/{{ coach['c_key'] }}">Edit</a>

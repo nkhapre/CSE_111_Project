@@ -13,14 +13,12 @@
             <th>Name</th>
             <th>Team</th>
             <th>Key</th>
-            <th>Season</th>
         </tr>
         {% for coach in coaches %}
         <tr>
             <td>{{ coach['c_name'] }}</td>
             <td>{{ coach['c_team'] }}</td>
             <td>{{ coach['c_key'] }}</td>
-            <td>{{ coach['c_season'] }}</td>
             <td>
                 <a href="/editc/{{ coach['c_key'] }}">Edit</a>
                 <form method="POST" action="/deletec/{{ coach['c_key'] }}" style="display:inline;">

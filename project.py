@@ -4,19 +4,12 @@ import sqlite3
 app = Flask(__name__)
 
 DB_PATH = "Checkpoint2-database.sqlite3"
-PER_PAGE = 10  # Number of records per page
 
 def get_db_connection():
     """Create and return a connection to the SQLite database."""
     connection = sqlite3.connect(DB_PATH)
     connection.row_factory = sqlite3.Row
     return connection
-
-def paginate(query, params, page):
-    offset = (page - 1) * PER_PAGE
-    query += ' LIMIT ? OFFSET ?'
-    params.extend([PER_PAGE, offset])
-    return query, params
 
 @app.route('/home')
 def home():
@@ -31,18 +24,19 @@ def root():
 @app.route('/search', methods=['GET', 'POST'])
 def search():
     """Search or sort players based on form input."""
-    player_name = request.form.get('player_name', '').strip()
-    team = request.form.get('team', '').strip()
-    position = request.form.get('position', '').strip()
-    player_key = request.form.get('player_key', '').strip()  # New: Get p_key from the form
-    sort_by = request.form.get('sort_by', 'p_name').strip()
-    action = request.form.get('action', 'search')  # Determine if it's a search or sort action
+    # Use appropriate method
+    method = request.form if request.method == 'POST' else request.args
+    player_name = method.get('p_name', '').strip()
+    team = method.get('p_team', '').strip()
+    position = method.get('p_position', '').strip()
+    player_key = method.get('p_key', '').strip()
+    sort_by = method.get('sort_by', 'p_name').strip()
+    action = method.get('action', 'search')
 
-    # Base query
-    query = 'SELECT * FROM player WHERE 1=1'
+    query = "SELECT * FROM player WHERE 1=1"
     params = []
 
-    # Add conditions for search fields
+    # Add filters
     if player_name:
         query += ' AND p_name LIKE ?'
         params.append(f"%{player_name}%")
@@ -52,34 +46,21 @@ def search():
     if position:
         query += ' AND p_position LIKE ?'
         params.append(f"%{position}%")
-    if player_key:  # New: Add p_key filter
+    if player_key:
         query += ' AND p_key = ?'
         params.append(player_key)
 
-    # Add sorting if the action is "sort"
-    if action == 'sort':
-        query += f' ORDER BY {sort_by}'
-    else:
-        # Default sorting
-        query += ' ORDER BY p_name'
+    # Sorting
+    query += f' ORDER BY {sort_by}' if action == 'sort' else ' ORDER BY p_name'
 
     # Execute query
     connection = get_db_connection()
+    print("Final Query:", query)  # Debug
+    print("Params:", params)      # Debug
     players = connection.execute(query, params).fetchall()
 
-    # Count total results (optional, in case you want to display the total count)
-    total_query = 'SELECT COUNT(*) FROM player WHERE 1=1'
-    total_params = params
-    if player_name:
-        total_query += ' AND p_name LIKE ?'
-    if team:
-        total_query += ' AND p_team LIKE ?'
-    if position:
-        total_query += ' AND p_position LIKE ?'
-    if player_key:
-        total_query += ' AND p_key = ?'
-
-    total = connection.execute(total_query, total_params).fetchone()[0]
+    # Optional: Count total results
+    total = len(players)
     connection.close()
 
     return render_template(
@@ -119,11 +100,6 @@ def searchc():
         # Default sorting
         query += ' ORDER BY c_name'
 
-    # Add pagination
-    offset = (page - 1) * PER_PAGE
-    query += ' LIMIT ? OFFSET ?'
-    params.extend([PER_PAGE, offset])
-
     # Execute query
     connection = get_db_connection()
     coaches = connection.execute(query, params).fetchall()
@@ -143,7 +119,7 @@ def searchc():
 
     return render_template(
         'searchc.html', coaches=coaches, coach_name=coach_name, team=team, 
-        coach_key=coach_key, sort_by=sort_by, page=page, total=total, per_page=PER_PAGE
+        coach_key=coach_key, sort_by=sort_by, page=page, total=total
     )
 
 @app.route('/searcht', methods=['GET', 'POST'])
@@ -178,11 +154,6 @@ def searcht():
         # Default sorting
         query += ' ORDER BY t_name'
 
-    # Add pagination
-    offset = (page - 1) * PER_PAGE
-    query += ' LIMIT ? OFFSET ?'
-    params.extend([PER_PAGE, offset])
-
     # Execute query
     connection = get_db_connection()
     teams = connection.execute(query, params).fetchall()
@@ -202,7 +173,7 @@ def searcht():
 
     return render_template(
         'searcht.html', teams=teams, team_name=team_name, team_city=team_city, 
-        team_conference = team_conference, sort_by=sort_by, page=page, total=total, per_page=PER_PAGE
+        team_conference = team_conference, sort_by=sort_by, page=page, total=total
     )
 
 
@@ -218,19 +189,28 @@ def add_player():
         number = request.form['p_number']
         team = request.form['p_team']
         position = request.form['p_position']
-        key = request.form['p_key']
         season = request.form['p_season']
+        p_key = request.form['p_key']
 
         connection = get_db_connection()
         connection.execute(
-            'INSERT INTO player (p_name, p_number, p_team, p_position, p_key, p_season) VALUES (?, ?, ?, ?, ?, ?)',
-            (name, number, team, position, key, season)
+            """INSERT INTO player (p_name, p_number, p_team, p_position, p_key, p_season) 
+            VALUES (?, ?, ?, ?, ?, ?)""",
+            (name, number, team, position, season)
         )
         connection.commit()
         connection.close()
 
         return redirect('/')
-    return render_template('add.html')
+    
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    cursor.execute("SELECT MAX(PLAYER_ID) FROM career_stats")
+    max_player_id = cursor.fetchone()[0] 
+    connection.close()
+
+    next_player_id = max_player_id + 1 if max_player_id is not None else 1
+    return render_template('add.html', next_player_id=next_player_id)
 
 
 
@@ -268,11 +248,10 @@ def edit_player(p_key):
         number = request.form['p_number']
         team = request.form['p_team']
         position = request.form['p_position']
-        season = request.form['p_season']
 
         connection.execute(
             'UPDATE player SET p_name = ?, p_number = ?, p_team = ?, p_position = ?, p_season = ? WHERE p_key = ?',
-            (name, number, team, position, season, p_key)
+            (name, number, team, position, p_key)
         )
         connection.commit()
         connection.close()
@@ -332,7 +311,10 @@ def delete_player(p_key):
 def index():
     """Display all players."""
     connection = get_db_connection()
-    players = connection.execute('SELECT * FROM player').fetchall()
+    players = connection.execute("""
+        SELECT * FROM player
+        JOIN career_stats ON career_stats.p_key = player.p_key
+    """).fetchall()
     connection.close()
     return render_template('index.html', players=players)
 
@@ -351,8 +333,6 @@ def teams():
     teams = connection.execute('SELECT * FROM team').fetchall()
     connection.close()
     return render_template('teams.html', teams=teams)
-    
-
 
 if __name__ == '__main__':
     app.run(debug=True)
