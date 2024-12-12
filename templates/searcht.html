@@ -14,9 +14,12 @@
         <label for="team">City:</label>
         <input type="text" id="team_city" name="team_city" value="{{ team_city }}">
         
-    
-        <label for="conference">Team Conference:</label> 
-        <input type="text" id="team_conference" name="team_conference" value="{{ team_conference }}">
+        <label for="team_conference">Conference:</label>
+        <select id="team_conference" name="team_conference">
+            <option value="">Any</option>
+            <option value="west" {% if team_conference == 'west' %}selected{% endif %}>Western</option>
+            <option value="east" {% if team_conference == 'east' %}selected{% endif %}>Eastern</option>
+        </select>
         
         <label for="sort_by">Sort By:</label>
         <select id="sort_by" name="sort_by">
@@ -28,6 +31,7 @@
         <button type="submit" name="action" value="search">Search</button>
         <button type="submit" name="action" value="sort">Sort</button>
     </form>
+    <a href="/home">Back to Home</a>
 
     {% if teams %}
     <h2>Search Results</h2>

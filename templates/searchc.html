@@ -16,7 +16,7 @@
         
         <label for="coach_key">Coach Key:</label> <!-- New: Add input for coach key -->
         <input type="text" id="coach_key" name="coach_key" value="{{ coach_key }}">
-        
+
         <label for="sort_by">Sort By:</label>
         <select id="sort_by" name="sort_by">
             <option value="c_name" {% if sort_by == 'c_name' %}selected{% endif %}>Name</option>
@@ -46,7 +46,7 @@
             <td>{{ coach['c_key'] }}</td>
              <!-- New: Display coach Key -->
             <td>
-                <a href="/edit/{{ coach['c_key'] }}">Edit</a>
+                <a href="/editc/{{ coach['c_key'] }}">Edit</a>
                 <form method="POST" action="/deletec/{{ coach['c_key'] }}" style="display:inline;">
                     <button type="submit">Delete</button>
                 </form>

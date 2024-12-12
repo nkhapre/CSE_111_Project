@@ -7,6 +7,7 @@
 </head>
 <body>
     <h1>Edit Coach</h1>
+    <a href="/home">Back to Home</a>
     <form method="POST" action="/editc/{{ coach['c_key'] }}">
         <label>Name:</label>
         <input type="text" name="c_name" value="{{ coach['c_name'] }}" required>

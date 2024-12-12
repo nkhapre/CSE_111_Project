@@ -123,13 +123,20 @@ def searchc():
 
 @app.route('/searcht', methods=['GET', 'POST'])
 def searcht():
-    """Search or sort teams based on form input."""
+    """Search, filter, or sort teams based on form input."""
     team_name = request.form.get('team_name', '').strip()
-    team_city = request.form.get('team_city', '').strip()  # New: Get c_key from the form
-    team_conference = request.form.get('team_conference', '').strip()  # New: Get c_key from the form
+    team_city = request.form.get('team_city', '').strip()
+    team_conference = request.form.get('team_conference', '').strip()  # Conference filter
     sort_by = request.form.get('sort_by', 't_name').strip()
     action = request.form.get('action', 'search')  # Determine if it's a search or sort action
     page = int(request.args.get('page', 1))
+
+    # Initialize conference_value
+    conference_value = None
+    if team_conference == 'west':
+        conference_value = 'Western'
+    elif team_conference == 'east':
+        conference_value = 'Eastern'
 
     # Base query
     query = 'SELECT * FROM team WHERE 1=1'
@@ -142,39 +149,54 @@ def searcht():
     if team_city:
         query += ' AND t_city LIKE ?'
         params.append(f"%{team_city}%")
-    if team_conference:  # New: Add c_key filter
-        query += ' AND t_conference = ?'
-        params.append(team_conference)
+    if team_conference:
+        # Map user-friendly dropdown values to database values
+        if team_conference == 'west':
+            conference_value = 'Western'
+        elif team_conference == 'east':
+            conference_value = 'Eastern'
+        else:
+            conference_value = None  # No filtering
+        if conference_value:
+            query += ' AND t_conference = ?'
+            params.append(conference_value)
 
     # Add sorting if the action is "sort"
     if action == 'sort':
         query += f' ORDER BY {sort_by}'
     else:
-        # Default sorting
-        query += ' ORDER BY t_name'
+        query += ' ORDER BY t_name'  # Default sorting
 
-    # Execute query
+    # Execute main query
     connection = get_db_connection()
     teams = connection.execute(query, params).fetchall()
 
-    # Count total results
+    # Total count query (needs to match filters)
     total_query = 'SELECT COUNT(*) FROM team WHERE 1=1'
-    total_params = params[:-2]  # Exclude pagination params
+    total_params = []
     if team_name:
         total_query += ' AND t_name LIKE ?'
+        total_params.append(f"%{team_name}%")
     if team_city:
         total_query += ' AND t_city LIKE ?'
-    if team_conference:
+        total_params.append(f"%{team_city}%")
+    if conference_value:
         total_query += ' AND t_conference = ?'
+        total_params.append(conference_value)
 
     total = connection.execute(total_query, total_params).fetchone()[0]
     connection.close()
 
     return render_template(
-        'searcht.html', teams=teams, team_name=team_name, team_city=team_city, 
-        team_conference = team_conference, sort_by=sort_by, page=page, total=total
+        'searcht.html', 
+        teams=teams, 
+        team_name=team_name, 
+        team_city=team_city, 
+        team_conference=team_conference, 
+        sort_by=sort_by, 
+        page=page, 
+        total=total
     )
-
 
 
 @app.route('/add', methods=['GET', 'POST'])
@@ -182,17 +204,15 @@ def add_player():
     """Add a new player."""
     if request.method == 'POST':
         name = request.form['p_name']
-        number = request.form['p_number']
         team = request.form['p_team']
         position = request.form['p_position']
-        season = request.form['p_season']
-        p_key = request.form['p_key']
+        key = request.form['p_key']
 
         connection = get_db_connection()
         connection.execute(
-            """INSERT INTO player (p_name, p_number, p_team, p_position, p_key, p_season) 
-            VALUES (?, ?, ?, ?, ?, ?)""",
-            (name, number, team, position, season)
+            """INSERT INTO player (p_name, p_team, p_position, p_key) 
+            VALUES (?, ?, ?, ?)""",
+            (name, team, position, key)
         )
         connection.commit()
         connection.close()
@@ -248,17 +268,16 @@ def edit_player(p_key):
 
     if request.method == 'POST':
         name = request.form['p_name']
-        number = request.form['p_number']
         team = request.form['p_team']
         position = request.form['p_position']
 
         connection.execute(
-            'UPDATE player SET p_name = ?, p_number = ?, p_team = ?, p_position = ?, p_season = ? WHERE p_key = ?',
-            (name, number, team, position, p_key)
+            'UPDATE player SET p_name = ?, p_team = ?, p_position = ? WHERE p_key = ?',
+            (name, team, position, p_key)
         )
         connection.commit()
         connection.close()
-        return redirect('/')
+        return redirect('/allplayers')
 
     connection.close()
     return render_template('edit.html', player=player)
@@ -284,7 +303,7 @@ def edit_coach(c_key):
         )
         connection.commit()
         connection.close()
-        return redirect('/')
+        return redirect('/allcoaches')
 
     connection.close()
     return render_template('editc.html', coach=coach)
