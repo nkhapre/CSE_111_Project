@@ -4,8 +4,11 @@ import pandas as pd
 file_path = 'PLAYER_CAREER_STATS.csv'
 data = pd.read_csv(file_path)
 
+# Strip any leading/trailing spaces in the column names
+data.columns = data.columns.str.strip()
+
 # Drop unnecessary columns explicitly
-data = data.drop(columns=['PLAYER_AGE', 'SEASON_ID', 'TEAM_ID', 'LEAGUE_ID', 'TEAM_ABBREVIATION', 'Player_STATUS'], errors='ignore')
+data = data.drop(columns=['PLAYER_AGE', 'LEAGUE_ID', 'TEAM_ID', 'TEAM_ABBREVIATION', 'Player_STATUS'], errors='ignore')
 
 # Define the columns to exclude from summing (those to be averaged)
 exclude_from_sum = ['FG_PCT', 'FG3_PCT', 'FT_PCT']
@@ -16,16 +19,20 @@ career_stats_list = []
 # Sort the data by PLAYER_ID to process each player consecutively
 data = data.sort_values(by='PLAYER_ID')
 
+# Ensure we are using 'SEASON_ID' correctly
+season_column = 'SEASON_ID'  # Correct column name for the season
+
+# Remove duplicates by keeping only the first entry per player-season combination
+data = data.drop_duplicates(subset=['PLAYER_ID', season_column], keep='first')
+
 # Initialize variables to store the sum for each player and the count for averaging
 current_player_id = None
 player_sum = {col: 0 for col in data.select_dtypes(include='number').columns if col not in exclude_from_sum}
 player_avg = {col: 0 for col in exclude_from_sum}
-game_count = 0  # To track the number of games per player
+season_count = 0  # To track the number of seasons per player
 
 # Iterate through the rows of the dataset
-i = 0
-while i < len(data):
-    row = data.iloc[i]
+for i, row in data.iterrows():
     player_id = row['PLAYER_ID']
     
     if player_id == current_player_id:
@@ -37,15 +44,15 @@ while i < len(data):
         for col in player_avg:
             player_avg[col] += row[col]
         
-        game_count += 1
+        season_count += 1
     else:
         # If we encounter a new player, store the previous player's data
         if current_player_id is not None:
             player_sum['PLAYER_ID'] = current_player_id
-            player_sum['GP'] = game_count
+            player_sum['SEASONS'] = season_count
             # Calculate average for the excluded columns
             for col in player_avg:
-                player_avg[col] /= game_count  # Averaging the stats
+                player_avg[col] /= season_count  # Averaging the stats
             # Add the averages to the player stats
             player_sum.update(player_avg)
             career_stats_list.append(player_sum)
@@ -54,7 +61,7 @@ while i < len(data):
         current_player_id = player_id
         player_sum = {col: 0 for col in data.select_dtypes(include='number').columns if col not in exclude_from_sum}
         player_avg = {col: 0 for col in exclude_from_sum}
-        game_count = 0
+        season_count = 0
         
         # Add the current row stats
         for col in player_sum:
@@ -63,16 +70,14 @@ while i < len(data):
         for col in player_avg:
             player_avg[col] += row[col]
         
-        game_count += 1
-    
-    i += 1
+        season_count += 1
 
 # After the loop, append the last player's data
 if current_player_id is not None:
     player_sum['PLAYER_ID'] = current_player_id
-    player_sum['GP'] = game_count
+    player_sum['SEASONS'] = season_count
     for col in player_avg:
-        player_avg[col] /= game_count  # Averaging the stats
+        player_avg[col] /= season_count  # Averaging the stats
     player_sum.update(player_avg)
     career_stats_list.append(player_sum)
 
