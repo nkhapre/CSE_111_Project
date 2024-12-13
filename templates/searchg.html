@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Game Logs</title>
+</head>
+<body>
+    <h1>Search Game Logs</h1>
+    <form method="POST" action="/searchg">
+
+        <label for="winning_team_name">Winning Team:</label>
+        <select id="winning_team_name" name="winning_team_name">
+            <option value="">Select Team</option>
+            {% for team in teams %}
+                <option value="{{ team['t_name'] }}" {% if team['t_name'] == winning_team_name %}selected{% endif %}>{{ team['t_name'] }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="losing_team_name">Losing Team:</label>
+        <select id="losing_team_name" name="losing_team_name">
+            <option value="">Select Team</option>
+            {% for team in teams %}
+                <option value="{{ team['t_name'] }}" {% if team['t_name'] == losing_team_name %}selected{% endif %}>{{ team['t_name'] }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit" name="action" value="search">Search</button>
+    </form>
+    <a href="/home">Back to Home</a>
+
+    {% if game_logs %}
+        <h2>Search Results</h2>
+        <table border="1">
+            <tr>
+                <th>Winning Team</th>
+                <th>Losing Team</th>
+                <th>Winning Team Score</th>
+                <th>Losing Team Score</th>
+                <th>Game Date</th>  <!-- New column for the game date -->
+            </tr>
+            {% for game in game_logs %}
+            <tr>
+                <td>{{ game['winning_team'] }}</td>
+                <td>{{ game['losing_team'] }}</td>
+                <td>{{ game['wt_score'] }}</td>
+                <td>{{ game['lt_score'] }}</td>
+                <td>{{ game['date'] }}</td>  <!-- Displaying the game date -->
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No results found.</p>
+    {% endif %}
+</body>
+</html>

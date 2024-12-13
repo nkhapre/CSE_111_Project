@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Logs</title>
+</head>
+<body>
+    <h1>All Game Logs</h1>
+    <a href="/home">Back to Home</a>
+    <table border="1">
+        <tr>
+            <th>Winning Team</th>
+            <th>Losing Team</th>
+            <th>Winning Team Score</th>
+            <th>Losing Team Score</th>
+            <th>Date</th>
+        </tr>
+        {% for log in game_logs %}
+        <tr>
+            <td>{{ log['winning_team'] }}</td>
+            <td>{{ log['losing_team'] }}</td>
+            <td>{{ log['wt_score'] }}</td>
+            <td>{{ log['lt_score'] }}</td>
+            <td>{{ log['date'] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

@@ -212,6 +212,63 @@ def searcht():
         total=total
     )
 
+@app.route('/searchg', methods=['GET', 'POST'])
+def searchg():
+    """Search, filter, or sort game logs based on form input."""
+    game_id = request.form.get('game_id', '').strip()
+    winning_team_name = request.form.get('winning_team_name', '').strip()
+    losing_team_name = request.form.get('losing_team_name', '').strip()
+    action = request.form.get('action', 'search')  # Determine if it's a search or sort action
+
+    # Prepare the basic query and parameters
+    query = """
+        SELECT 
+            g.GAME_ID, 
+            g.winning_team, 
+            g.losing_team, 
+            g.wt_score, 
+            g.lt_score,
+            g.date  -- Include the date column
+        FROM game g
+        JOIN team win_team ON g.winning_team = win_team.t_name
+        JOIN team lose_team ON g.losing_team = lose_team.t_name
+        WHERE 1=1
+    """
+    params = []
+
+    # Apply filters based on user input (team names and game ID)
+    if game_id:
+        query += " AND g.GAME_ID = ?"
+        params.append(game_id)
+
+    if winning_team_name:
+        query += " AND g.winning_team = ?"
+        params.append(winning_team_name)
+
+    if losing_team_name:
+        query += " AND g.losing_team = ?"
+        params.append(losing_team_name)
+
+    # Execute the query
+    connection = get_db_connection()
+    game_logs = connection.execute(query, params).fetchall()
+    connection.close()
+
+    # Fetch the list of all teams for dropdowns
+    connection = get_db_connection()
+    teams = connection.execute('SELECT t_name FROM team').fetchall()
+    connection.close()
+
+    return render_template(
+        'searchg.html', 
+        game_logs=game_logs, 
+        game_id=game_id, 
+        winning_team_name=winning_team_name, 
+        losing_team_name=losing_team_name,
+        teams=teams  # List of teams for dropdowns
+    )
+
+
 
 @app.route('/add', methods=['GET', 'POST'])
 def add_player():
@@ -392,6 +449,15 @@ def teams():
     teams = connection.execute('SELECT * FROM team').fetchall()
     connection.close()
     return render_template('teams.html', teams=teams)
+
+@app.route('/gamelogs', methods=['GET', 'POST'])
+def game():
+    """Display all game logs."""
+    connection = get_db_connection()
+    game_logs = connection.execute('SELECT * FROM game').fetchall()
+    connection.close()
+    return render_template('gamelogs.html', game_logs=game_logs)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
