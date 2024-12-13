@@ -20,6 +20,17 @@
             <option value="west" {% if team_conference == 'west' %}selected{% endif %}>Western</option>
             <option value="east" {% if team_conference == 'east' %}selected{% endif %}>Eastern</option>
         </select>
+
+        <label for="team_round">Round:</label>
+        <select id="team_round" name="team_round">
+            <option value="">Any</option>
+            <option value="Finals" {% if team_round == 'Finals' %}selected{% endif %}>Finals</option>
+            <option value="Conference Finals" {% if team_round == 'Conference Finals' %}selected{% endif %}>Conference Finals</option>
+            <option value="Semifinals" {% if team_round == 'Semifinals' %}selected{% endif %}>Semifinals</option>
+            <option value="First Round" {% if team_round == 'First Round' %}selected{% endif %}>First Round</option>
+            <option value="Did Not Qualify" {% if team_round == 'Did Not Qualify' %}selected{% endif %}>Did Not Qualify</option>
+        </select>
+
         
         <label for="sort_by">Sort By:</label>
         <select id="sort_by" name="sort_by">
@@ -40,13 +51,15 @@
             <th>Name</th>
             <th>City</th>
             <th>Conference</th>
+            <th>Round</th>
              <!-- New: Add Key column -->
         </tr>
         {% for team in teams %}
         <tr>
             <td>{{ team['t_name'] }}</td>
             <td>{{ team['t_city'] }}</td>
-            <td>{{ team['t_conference'] }}</td>           
+            <td>{{ team['t_conference'] }}</td>
+            <td>{{ team['round'] }}</td>     
         </tr>
         {% endfor %}
     </table>

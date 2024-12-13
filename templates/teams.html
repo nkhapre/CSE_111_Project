@@ -13,12 +13,18 @@
             <th>Name</th>
             <th>Abbreviation</th>
             <th>City</th>
+            <th>Year Founded</th>
+            <th>Conference</th>
+            <th>Round</th>
         </tr>
         {% for team in teams %}
         <tr>
             <td>{{ team['t_name'] }}</td>
             <td>{{ team['t_abbreviation'] }}</td>
             <td>{{ team['t_city'] }}</td>
+            <td>{{ team['year_founded'] }}</td>
+            <td>{{ team['t_conference'] }}</td>
+            <td>{{ team['round'] }}</td>
         </tr>
         {% endfor %}
     </table>

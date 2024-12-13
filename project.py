@@ -140,12 +140,13 @@ def searcht():
     """Search, filter, or sort teams based on form input."""
     team_name = request.form.get('team_name', '').strip()
     team_city = request.form.get('team_city', '').strip()
-    team_conference = request.form.get('team_conference', '').strip()  # Conference filter
+    team_conference = request.form.get('team_conference', '').strip()
+    team_round = request.form.get('team_round', '').strip()  # Round filter
     sort_by = request.form.get('sort_by', 't_name').strip()
     action = request.form.get('action', 'search')  # Determine if it's a search or sort action
     page = int(request.args.get('page', 1))
 
-    # Initialize conference_value
+    # Map conference dropdown values to database values
     conference_value = None
     if team_conference == 'west':
         conference_value = 'Western'
@@ -163,17 +164,12 @@ def searcht():
     if team_city:
         query += ' AND t_city LIKE ?'
         params.append(f"%{team_city}%")
-    if team_conference:
-        # Map user-friendly dropdown values to database values
-        if team_conference == 'west':
-            conference_value = 'Western'
-        elif team_conference == 'east':
-            conference_value = 'Eastern'
-        else:
-            conference_value = None  # No filtering
-        if conference_value:
-            query += ' AND t_conference = ?'
-            params.append(conference_value)
+    if conference_value:
+        query += ' AND t_conference = ?'
+        params.append(conference_value)
+    if team_round:
+        query += ' AND round = ?'
+        params.append(team_round)
 
     # Add sorting if the action is "sort"
     if action == 'sort':
@@ -197,6 +193,9 @@ def searcht():
     if conference_value:
         total_query += ' AND t_conference = ?'
         total_params.append(conference_value)
+    if team_round:
+        total_query += ' AND round = ?'
+        total_params.append(team_round)
 
     total = connection.execute(total_query, total_params).fetchone()[0]
     connection.close()
@@ -207,6 +206,7 @@ def searcht():
         team_name=team_name, 
         team_city=team_city, 
         team_conference=team_conference, 
+        team_round=team_round,  # Include round in the template context
         sort_by=sort_by, 
         page=page, 
         total=total
